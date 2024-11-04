@@ -5,7 +5,7 @@ public class Converter {
         string = string.toLowerCase();
         int[] numberArray = new int[string.length()];
         for (int i = 0; i < string.length(); i++) {
-            numberArray[i] =  string.charAt(i) - 'a' + 1;
+            numberArray[i] =  string.charAt(i) - 'a';
         }
         return numberArray;
     }
