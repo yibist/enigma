@@ -1,7 +1,14 @@
 package com.mikepound.analysis;
 
-public class ToRoman {
-
+public class Converter {
+    public static int[] StringToNumberArray(String string) {
+        string = string.toLowerCase();
+        int[] numberArray = new int[string.length()];
+        for (int i = 0; i < string.length(); i++) {
+            numberArray[i] =  string.charAt(i) - 'a' + 1;
+        }
+        return numberArray;
+    }
     public static String[] NumberToRoman(int[] numberArray) {
         String [] convertedArray =  new String[numberArray.length];
         for (int i = 0; i < numberArray.length; i++) {

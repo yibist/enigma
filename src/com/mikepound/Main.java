@@ -1,18 +1,18 @@
 package com.mikepound;
 
-import com.mikepound.analysis.EnigmaAnalysis;
-import com.mikepound.analysis.EnigmaKey;
-import com.mikepound.analysis.ScoredEnigmaKey;
-import com.mikepound.analysis.ToRoman;
-import com.mikepound.analysis.fitness.*;
+import com.mikepound.analysis.Converter;
 import com.mikepound.enigma.Enigma;
+
+import java.util.Arrays;
 
 public class Main {
 
     public static void main(String[] args) {
-        int bi = 0, bj = 0, bk = 0;
-        char[] ciphertext = "MUUQJZVQLORVMCOLYKXEPMCDCWGHNTQVMEHGECOEULBULBOCZPGBIXIFWCYXZKZKLYAEVCJDGXJZQKQGVXSORRQNZMATPZDOEXITXFIUVJFIZUAYLIJWVVGFYXGRDQKAGUUWBNUUOUXQQUCXKUXPTYUIIXPAYXRLTZPZQRNLOPAODDUSVFWMILZEOBVOPIPWHXVYADCORXPIIEUZVTXBRJRECTGLCPKQAJDAMI".toCharArray();
-        String plugBoard = "BD CO EI GL JS KT NV PM QR WZ";
+        char[] ciphertext = "RGOXTIVDHRFWGIKPUKXKCTISBGRIKMMYAAASMQFHZGLBUZGOFGMGOJFBOPYUKMPPXVGIBTFYGKOLISPXCLRREQXOUQOMXIJKLMNOPQRSTUVWXYZ".toCharArray();
+        String indicatorSetting = "XLT";
+        String messageKey = "VPM";
+        String plugBoard = "BL CK DG FP IR MO QW ST VY UZ";
+        /*
         for (int i = 0; i < 25; i++) {
             for (int j = 0; j < 25; j++) {
                 for (int k = 0; k < 25; k++) {
@@ -25,8 +25,34 @@ public class Main {
             }
 
         }
-
-        Enigma enigma = new Enigma(new String[]{"VIII", "II", "IV"}, "B", new int[]{14,14,18}, new int[]{18, 6, 11}, plugBoard);
-        System.out.println(new String(enigma.encrypt(ciphertext)));
+        */
+        int[][] permutations = {
+                {0, 1, 2},
+                {0, 2, 1},
+                {1, 0, 2},
+                {1, 2, 0},
+                {2, 0, 1},
+                {2, 1, 0}
+        };
+        int[] rottors = new int[]{1, 3, 5};
+        int[] ringSettings = new int[]{7, 25, 3};
+        for (int[] permutation : permutations) {
+            int[] rot = new int[]{rottors[permutation[0]], rottors[permutation[1]], rottors[permutation[2]]};
+            int[] set = new int[]{ringSettings[permutation[0]], ringSettings[permutation[1]], ringSettings[permutation[2]]};
+            Enigma enigma = new Enigma(Converter.NumberToRoman(rot), "B", Converter.StringToNumberArray(indicatorSetting), set, plugBoard);
+            enigma = new Enigma(Converter.NumberToRoman(rot), "B", Converter.StringToNumberArray(new String(enigma.encrypt(messageKey.toCharArray()))), set, plugBoard);
+            System.out.println(new String(enigma.encrypt(ciphertext)));
+        }
+        ciphertext = "NGWTVVGTHGZPQGFEXSWNFKSXHPOJCMPGHLLCAJCPUVIQUUZLQWAVOTSCPZFABNUORZZAFMCJPGPTGTDRGWTZAXNQRYJCBMQZVCQUCQOCOJGNYNUCAVOMA".toCharArray();
+        indicatorSetting ="HNB";
+        messageKey = "SFA";
+        System.out.println("-------------------------");
+        for (int[] permutation : permutations) {
+            int[] rot = new int[]{rottors[permutation[0]], rottors[permutation[1]], rottors[permutation[2]]};
+            int[] set = new int[]{ringSettings[permutation[0]], ringSettings[permutation[1]], ringSettings[permutation[2]]};
+            Enigma enigma = new Enigma(Converter.NumberToRoman(rot), "B", Converter.StringToNumberArray(indicatorSetting), set, plugBoard);
+            enigma = new Enigma(Converter.NumberToRoman(rot), "B", Converter.StringToNumberArray(new String(enigma.encrypt(messageKey.toCharArray()))), set, plugBoard);
+            System.out.println(new String(enigma.encrypt(ciphertext)));
+        }
     }
 }
