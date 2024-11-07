@@ -3,30 +3,19 @@ package com.mikepound;
 import com.mikepound.analysis.Converter;
 import com.mikepound.enigma.Enigma;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Main {
 
     public static void main(String[] args) {
-        char[] ciphertext = "ZJTPLTJNETNLLGOPQVSWXSRHCOSHUTFGUSHHTVPOUMBMVGKLAAFDUBNUVCUVPOCFJXDMIQCCAUCBQOKPHUMCIZAJVIQESVGCFHDTISREHFCMBPJCRTWTTMXCNOIEUWRPOMCEMSUNBBCTWZZRBLFLUFIFBNYOYJGXUMNKPTCQHTGVYWSQDFFMSWVECIDWILZBYLIPRXYICFCLPDQZNOZWSKVNJURTGKMWUNFPNLEPOFQLJMEDEFNMLRRRRJYTBVRKBQQGSUWVAWAFUUWFLMPKPHLDML".toCharArray();
-        String indicatorSetting = "AST";
-        String messageKey = "SGT";
-        String plugBoard = "AL FP HX JO KT NV QR SU WY EC";
+        char[] ciphertext = "KGBJNTWBQYFFJWQKKCTNZJVRKBWPQOFZQTBLCYCMWCWTRXSGKAWIZEZKFIWCKPEYBOBUBWVUHBOBKEGFWGGSQWUMIOBKHSFTXAGYXPKAXAOJQJANZKZREKYXTXWWRHJHSTEJAJSQFZMZFLTSEQXBAZWDSJRWHVGFKIXLMPUYINNQSAWQHXAJQJCGUCQUFIHWAFNAAFPRZSMTRKYLUGAOZKYNMXFCHQQEVMTTINCHTSWCYCRZFBKMBVSHEKXDYCYPWSZJWVZAKIRMSQDZKTFDDEUXWKXMNPDMKDRKASAORATLJAEHWINMVRSWASF".toCharArray();
+        String plugBoard = "BD CV EL GN IZ JO KW MT PR SX";
         String reflector = "C";
         /*
-        for (int i = 0; i < 25; i++) {
-            for (int j = 0; j < 25; j++) {
-                for (int k = 0; k < 25; k++) {
-                    Enigma enigma = new Enigma(ToRoman.NumberToRoman(new int[]{8,2,4}), "B", new int[]{i,j,k}, new int[]{18,6,11}, plugBoard);
-                    String sol = new String(enigma.encrypt(ciphertext));
-                    if (sol.contains("UBOOT")) {
-                        System.out.println(sol);
-                    }
-                }
-            }
+        String indicatorSetting = "AST";
+        String messageKey = "SGT";
 
-        }
-        */
         int[][] permutations = {
                 {0, 1, 2},
                 {0, 2, 1},
@@ -35,18 +24,28 @@ public class Main {
                 {2, 0, 1},
                 {2, 1, 0}
         };
-        int[] rottors = new int[]{3,2,5};
-        int[] ringSettings = new int[]{7, 18, 2};
-        for (int[] permutation : permutations) {
-            int[] rot = new int[]{rottors[permutation[0]], rottors[permutation[1]], rottors[permutation[2]]};
-            for (int[] permutation2 : permutations) {
-                int[] set = new int[]{ringSettings[permutation2[0]], ringSettings[permutation2[1]], ringSettings[permutation2[2]]};
-                Enigma enigma = new Enigma(Converter.NumberToRoman(rot), reflector, Converter.StringToNumberArray(indicatorSetting), set, plugBoard);
-                enigma = new Enigma(Converter.NumberToRoman(rot), reflector, Converter.StringToNumberArray(new String(enigma.encrypt(messageKey.toCharArray()))), set, plugBoard);
-                String sol = new String(enigma.encrypt(ciphertext));
-                if (sol.contains("UBOOT")) {
-                    System.out.println(sol);
+
+        */
+        ArrayList<String> list = new ArrayList<>();
+        int[] rottors = new int[]{2, 4, 1};
+        for (int i = 0; i < 25; i++) {
+            for (int j = 0; j < 25; j++) {
+                for (int k = 0; k < 25; k++) {
+                    int[] ringSettings = new int[]{j,k, 20};
+                    int[] startingPositions = new int[]{i, Converter.StringToNumber("K"), Converter.StringToNumber("E")};
+                    Enigma enigma = new Enigma(Converter.NumberToRoman(rottors), reflector, startingPositions, ringSettings, plugBoard);
+                    String sol = new String(enigma.encrypt(ciphertext));
+                    if (!list.contains(sol)) {
+                        list.add(sol);
+                    }
                 }
+            }
+        }
+
+        for (String s : list) {
+            if (s.contains("PLANUNG")) {
+
+                System.out.println(s);
             }
         }
     }

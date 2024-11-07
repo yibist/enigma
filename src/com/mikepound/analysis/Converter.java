@@ -26,4 +26,9 @@ public class Converter {
         }
         return convertedArray;
     }
+
+    public static int StringToNumber(String string) {
+        string = string.toLowerCase();
+        return string.charAt(0) - 'a';
+    }
 }
