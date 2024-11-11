@@ -9,9 +9,10 @@ import java.util.Arrays;
 public class Main {
 
     public static void main(String[] args) {
-        char[] ciphertext = "KGBJNTWBQYFFJWQKKCTNZJVRKBWPQOFZQTBLCYCMWCWTRXSGKAWIZEZKFIWCKPEYBOBUBWVUHBOBKEGFWGGSQWUMIOBKHSFTXAGYXPKAXAOJQJANZKZREKYXTXWWRHJHSTEJAJSQFZMZFLTSEQXBAZWDSJRWHVGFKIXLMPUYINNQSAWQHXAJQJCGUCQUFIHWAFNAAFPRZSMTRKYLUGAOZKYNMXFCHQQEVMTTINCHTSWCYCRZFBKMBVSHEKXDYCYPWSZJWVZAKIRMSQDZKTFDDEUXWKXMNPDMKDRKASAORATLJAEHWINMVRSWASF".toCharArray();
-        String plugBoard = "BD CV EL GN IZ JO KW MT PR SX";
-        String reflector = "C";
+        char[] ciphertext = "ACINZCRVFJRPETNUGAVDZIHXFWTPKKTTVXZJTAYNXRQMAJKKFIWUXTNHFCMZPUUYPPKILQYBYRDMHFBMHPGYLCEIJUNMWGQOKGHMDLGJWBQBZBVWDTSUWHGXZRFUXWQTHTRHYPTPJZROFTCNMXCKSDDNHIWYSUGQRZUIYIUOTDZPQRTCXVQXPMZGJBWLHXULWLUNLWPWNTONBQUFMMIKNTVWNK".toCharArray();
+        String plugBoard = "AS CK DE FV GJ LU MW OT PX RZ";
+        String reflector = "B";
+        String[] wordList = new String[] {"EINS", "ZWO", "DREI", "VIER", "FUNF", "SECHS", "SIEBEN", "ACHT", "NEUN", "NULL", "ANFANG", "OPERATION", "VON", "OKW", "WINTER"};
         /*
         String indicatorSetting = "AST";
         String messageKey = "SGT";
@@ -27,13 +28,13 @@ public class Main {
 
         */
         ArrayList<String> list = new ArrayList<>();
-        int[] rottors = new int[]{2, 4, 1};
-        for (int i = 0; i < 25; i++) {
+        for (int i = 1; i < 9; i++) {
             for (int j = 0; j < 25; j++) {
                 for (int k = 0; k < 25; k++) {
-                    int[] ringSettings = new int[]{j,k, 20};
-                    int[] startingPositions = new int[]{i, Converter.StringToNumber("K"), Converter.StringToNumber("E")};
-                    Enigma enigma = new Enigma(Converter.NumberToRoman(rottors), reflector, startingPositions, ringSettings, plugBoard);
+                    int[] rotors = new int[]{2, 4, i};
+                    int[] ringSettings = new int[]{8,1, j};
+                    int[] startingPositions = new int[]{Converter.StringToNumber("E"), Converter.StringToNumber("F"), k};
+                    Enigma enigma = new Enigma(Converter.NumberToRoman(rotors), reflector, startingPositions, ringSettings, plugBoard);
                     String sol = new String(enigma.encrypt(ciphertext));
                     if (!list.contains(sol)) {
                         list.add(sol);
@@ -42,11 +43,8 @@ public class Main {
             }
         }
 
-        for (String s : list) {
-            if (s.contains("PLANUNG")) {
-
+        for (String s : Converter.getWordCount(list,wordList, 4)) {
                 System.out.println(s);
-            }
         }
     }
 }
