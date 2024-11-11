@@ -2,8 +2,11 @@ package com.mikepound.analysis;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Converter {
+
     public static int[] StringToNumberArray(String string) {
         string = string.toLowerCase();
         int[] numberArray = new int[string.length()];
@@ -59,7 +62,7 @@ public class Converter {
             for (String word : wordList) {
                 String text = newArr.get(i);
                 if (text.contains(word)) {
-                    newArr.set(i,text.replace(word, "_"));
+                    newArr.set(i, text.replace(word, "_"));
                 }
             }
         }
@@ -73,6 +76,42 @@ public class Converter {
         }
 
         return newArr2;
+    }
+
+
+    private static String[] proonAlphabet(String plugBoard) {
+        String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        for (String plugString : plugBoard.replaceAll(" ", "").split("")) {
+           alphabet = alphabet.replace(plugString, "");
+        }
+        return alphabet.split("");
+    }
+
+    public static ArrayList<String> getPossiblePlugboards(String plugBoard) {
+        String[] possibleLetters = Converter.proonAlphabet(plugBoard);
+        ArrayList<String> result = new ArrayList<>();
+        for (String pL1 : possibleLetters) {
+            for (String pL2 : possibleLetters) {
+                if (!pL1.equals(pL2)) {
+                    result.add(pL1 + pL2);
+                }
+            }
+        }
+        return result;
+    }
+
+    public static boolean hasSameLetters(String[] strings) {
+        Set<Character> seenLetters = new HashSet<>();
+
+        for (String str : strings) {
+            for (char c : str.toCharArray()) {
+                if (seenLetters.contains(c)) {
+                    return true;  // Shared letter found
+                }
+                seenLetters.add(c);
+            }
+        }
+        return false;  // No shared letters
     }
 
 }
