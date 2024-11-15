@@ -1,10 +1,17 @@
 package com.mikepound;
 
+import com.mikepound.analysis.Converter;
 import com.mikepound.analysis.EnigmaAnalysis;
 import com.mikepound.analysis.EnigmaKey;
 import com.mikepound.analysis.ScoredEnigmaKey;
 import com.mikepound.analysis.fitness.*;
 import com.mikepound.enigma.Enigma;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 public class Main {
 
@@ -13,43 +20,73 @@ public class Main {
         FitnessFunction ioc = new IoCFitness();
         FitnessFunction bigrams = new BigramFitness();
         FitnessFunction quadgrams = new QuadramFitness();
-
+        char[] ciphertext = "KYYUGIWKSEYPQDFYPIJNTGNDIAHNBROXDIKEKPTMOUHBEJRRJPVBAOCUZRDFSAZDCNUNNMRPCCMCHJBWSTIKZIREBBVJQAXZARIYVANIJVOLDNBUMXXFNZVRQEGOYXEVVNMPWEBSKEUTJJOKPBKLHIYWGNFFPXKIEWSNTLMDKYIDMOFPTDFJAZOHVVQETNIPVZGTUMYJCMSEAKTYELPZUNHEYFCLAADYPEEXMHQMVAVZZDOIMGLERBBLATHQJIYCBSUPVVTRADCRDDSTYIXYFEAFZYLNZZDPNNXXZJNRCWEXMTYRJOIAOEKNRXGXPNMTDGKFZDSYHMUJAPOBGANCRCZTMEPXESDZTTJZGNGQRMKNCZNAFMDAXXTJSRTAZTZKRTOXHAHTNPEVNAAVUZMHLPXLMSTWELSOBCTMBKGCJKMDPDQQGCZHMIOCGRPDJEZTYVDQGNPUKCGKFFWMNKWPSCLENWHUEYCLYVHZNKNVSCZXUXDPZBDPSYODLQRLCGHARLFMMTPOCUMOQLGJJAVXHZZVBFLXHNNEJXS".toCharArray();
+        String plugBoard = "";
+        String[] wordList = "NULL, EINS, ZWO, DREI, VIER, FUNF, SECHS, SIEBEN, ACHT, NEUN,PLANUNG, OPERATION, SOVIET, OKW, VON, WINTER, DIVISION, PANZER, AFRIKA, KORPS, TRIPOLI, BERG, WEHR, MACHT,ROMMEL, WAFFE, ERLAUBNIS, DEUTSCH,GRUPPE,NORD,OST,SUD,WEST,FELD,MARSCH,SCHUTZ,FUHRER,VOSGE,UBOOT,BRITISCH, TUNIS, ICH, NAZAIR, CALAIS, LORIENT, SCHUTZ, ADOLF, HITLER, BRUSSEL, NACHT, WEIH, BERLIN, BUNKER, NACH, DURCH".replaceAll(" ", "").split(",");
+        String indicatorSettings = "EDF";
+        String messageKeys = "GXT";
+        String[] reflectors = new String[]{"C", "B"};
+        System.out.println(ciphertext.length);
         final long startTime = System.currentTimeMillis();
 
         // For those interested, these were the original settings
         // II V III / 7 4 19 / 12 2 20 / AF TV KO BL RW
-        char[] ciphertext = "OZLUDYAKMGMXVFVARPMJIKVWPMBVWMOIDHYPLAYUWGBZFAFAFUQFZQISLEZMYPVBRDDLAGIHIFUJDFADORQOOMIZPYXDCBPWDSSNUSYZTJEWZPWFBWBMIEQXRFASZLOPPZRJKJSPPSTXKPUWYSKNMZZLHJDXJMMMDFODIHUBVCXMNICNYQBNQODFQLOGPZYXRJMTLMRKQAUQJPADHDZPFIKTQBFXAYMVSZPKXIQLOQCVRPKOBZSXIUBAAJBRSNAFDMLLBVSYXISFXQZKQJRIQHOSHVYJXIFUZRMXWJVWHCCYHCXYGRKMKBPWRDBXXRGABQBZRJDVHFPJZUSEBHWAEOGEUQFZEEBDCWNDHIAQDMHKPRVYHQGRDYQIOEOLUBGBSNXWPZCHLDZQBWBEWOCQDBAFGUVHNGCIKXEIZGIZHPJFCTMNNNAUXEVWTWACHOLOLSLTMDRZJZEVKKSSGUUTHVXXODSKTFGRUEIIXVWQYUIPIDBFPGLBYXZTCOQBCAHJYNSGDYLREYBRAKXGKQKWJEKWGAPTHGOMXJDSQKYHMFGOLXBSKVLGNZOAXGVTGXUIVFTGKPJU".toCharArray();
 
         // Begin by finding the best combination of rotors and start positions (returns top n)
-        ScoredEnigmaKey[] rotorConfigurations = EnigmaAnalysis.findRotorConfiguration(ciphertext,
-                EnigmaAnalysis.AvailableRotors.FIVE,
-                "",
-                10,
-                ioc);
-
-        System.out.println("\nTop 10 rotor configurations:");
-        for (ScoredEnigmaKey key : rotorConfigurations) {
-            System.out.println(String.format("%s %s %s / %d %d %d / %f",
-                    key.rotors[0], key.rotors[1], key.rotors[2],
-                    key.indicators[0], key.indicators[1], key.indicators[2],
-                    key.getScore()));
+        List<String[]> rotorConfigurations = EnigmaAnalysis.getThreeRotorCombinations(List.of("I", "II", "III", "IV", "V", "VI", "VII", "VIII"));
+        ArrayList<ScoredEnigmaKey> goodKeys = new ArrayList<>();
+        for (String reflector : new String[]{"C", "B"}) {
+            rotorConfigurations.parallelStream().forEach(rotors -> {
+                //System.out.println(rotors[0] + " " + rotors[1] + " " + rotors[2]);
+                for (int i = 0; i < 26; i++) {
+                    for (int j = 0; j < 26; j++) {
+                        for (int k = 0; k < 26; k++) {
+                            Enigma enigma = new Enigma(rotors, reflector, Converter.StringToNumberArray(indicatorSettings), new int[]{i, j, k}, "");
+                            String decriptedMessageKey = new String(enigma.encrypt(messageKeys.toCharArray()));
+                            int[] ringSettings = Converter.StringToNumberArray(decriptedMessageKey);
+                            enigma = new Enigma(rotors, reflector, ringSettings, new int[]{i, j, k}, "");
+                            char[] decriptedText = enigma.encrypt(ciphertext);
+                            float iocScore = ioc.score(decriptedText);
+                            if (iocScore > 0.04f) {
+                                EnigmaKey key = new EnigmaKey(rotors, ringSettings, new int[]{i, j, k}, "");
+                                goodKeys.add(new ScoredEnigmaKey(key, iocScore));
+                            }
+                        }
+                    }
+                }
+            });
         }
-        System.out.println(String.format("Current decryption: %s\n",
-                new String(new Enigma(rotorConfigurations[0]).encrypt(ciphertext))));
+        /*
+        for (char c : decriptedText) {
 
-        // Next find the best ring settings for the best configuration (index 0)
-        ScoredEnigmaKey rotorAndRingConfiguration = EnigmaAnalysis.findRingSettings(rotorConfigurations[0], ciphertext, bigrams);
+        }
+        */
+        System.out.println(goodKeys.size());
+        goodKeys.parallelStream().forEach(keys -> {
+            ScoredEnigmaKey key = EnigmaAnalysis.findPlugs(keys, 10, ciphertext, ioc);
+            HashMap<Character, Integer> mostCommonLetters = new HashMap<>();
+            Enigma enigma = new Enigma(key);
+            for (char c : enigma.encrypt(ciphertext)) {
+                if (!mostCommonLetters.containsKey(c)) {
+                    mostCommonLetters.put(c, 0);
+                }
+                mostCommonLetters.put(c, mostCommonLetters.get(c) + 1);
+            }
+            if (mostCommonLetters.get('E') == null) {return;}
+            if (mostCommonLetters.get('N') == null) {return;}
+            if (mostCommonLetters.get('E')>40 || mostCommonLetters.get('N')>40) {
+                ArrayList<String> strings = new ArrayList<>();
+                strings.add(new String(enigma.encrypt(ciphertext)));
 
-        System.out.println(String.format("Best ring settings: %d %d %d",
-                rotorAndRingConfiguration.rings[0], rotorAndRingConfiguration.rings[1], rotorAndRingConfiguration.rings[2]));
-        System.out.println(String.format("Current decryption: %s\n",
-                new String(new Enigma(rotorAndRingConfiguration).encrypt(ciphertext))));
 
-        // Finally, perform hill climbing to find plugs one at a time
-        ScoredEnigmaKey optimalKeyWithPlugs = EnigmaAnalysis.findPlugs(rotorAndRingConfiguration, 5, ciphertext, quadgrams);
-        System.out.println(String.format("Best plugboard: %s", optimalKeyWithPlugs.plugboard));
-        System.out.println(String.format("Final decryption: %s\n",
-                new String(new Enigma(optimalKeyWithPlugs).encrypt(ciphertext))));
+                for (String s: Converter.getWordCount(strings,wordList,5)) {
+
+                    System.out.println(key.getScore());
+                    System.out.println(s);
+                }
+            }
+
+        });
 
         final long endTime = System.currentTimeMillis();
 

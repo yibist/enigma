@@ -13,7 +13,7 @@ public class EnigmaAnalysis {
         EIGHT
     }
 
-    private static List<String[]> getThreeRotorCombinations(List<String> availableRotorList) {
+    public static List<String[]> getThreeRotorCombinations(List<String> availableRotorList) {
         List<String[]> threeRotorCombinations = new ArrayList<>();
 
         for (String rotor1 : availableRotorList) {
